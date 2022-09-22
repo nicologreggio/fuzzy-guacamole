@@ -1,5 +1,6 @@
 # fuzzy-guacamole
 Advanced Topics in Programming Languages project @ UniPd w/ Kynetics
+
 ![Fuzzy guacamole illustation (AI made digital art)](docs/Fuzzy2.jpg)
 > Design and Implementation of a Publish/Subscribe System
 
@@ -56,11 +57,16 @@ There are three different kind of containers:
 2. **scala**: *(based on a custom image, more in the implementation)* handles the core business logic
 3. **rust**: *(based on a custom image)* there can be several ones of this kind, being them the unit doing the chunk-search job. As discussed previously migrating from this local setup to a distributed one with each machine running an instance of this kind is straightforward, since the communication is always done via the broker on a network.
 
+The scala service receives the informations about the file and the regex via the environment, set by the launching script. At this point it fetches the line count of the file from the library and computes the length of each chunk to process based on the number of available units (which it knows again from the environment). Initially it subscribes to the topics `new_client` and `results`. The former will be to acknowledge and process the connection of a new unit while the latter to gather the results from the units which will then be printed.
 
+When a rust unit starts it connects to the broker and publish its own id (set by the environment) in the `new_client` topic, then it subscribes to the topic `unit_id`. At this point it will receive on "its own" topic the information from the server required to start the search. Then it fetches the required chunk from the library and seek for matches of the regex. Upon completion it publishes its results to the `results` topic.
+
+Finally the user can see the results thanks to the fact that the script, after executing compose in background, it attaches to the scala container stdout.
 
 ---
 
 # Implementation
 ## About the files library
-some files are included here, the bigger ones are ignored to save repo space. Large files can be found [here](https://github.com/logpai/loghub)
+The repo contains only some files, the bigger ones are ignored to save space. Large files can be found [here](https://github.com/logpai/loghub). In any case to add file it is enough to put it in the [library folder](library/)
+
 
