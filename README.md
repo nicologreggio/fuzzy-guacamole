@@ -66,7 +66,41 @@ Finally the user can see the results thanks to the fact that the script, after e
 ---
 
 # Implementation
+The implementation follows the design and what we described so far
 ## About the files library
 The repo contains only some files, the bigger ones are ignored to save space. Large files can be found [here](https://github.com/logpai/loghub). In any case to add file it is enough to put it in the [library folder](library/)
 
+## The docker environment
+In order to develop and run the application two custom images have been defined.
 
+One for scala, starting from the latest LTS ubuntu version:
+```Dockerfile
+FROM ubuntu:22.04
+RUN apt update && apt upgrade -y
+RUN apt install curl nano -y
+RUN curl -fL https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs && yes | ./cs setup
+RUN grep -i export ~/.profile >> ~/.bashrc 
+RUN echo 'PS1="SCALA | $PS1"' >> ~/.bashrc
+WORKDIR /work
+CMD bash
+```
+where scala is installed following [the official instructions](https://www.scala-lang.org/download/).
+
+The other for rust, starting from the official rust:1.63 image with some additional tweaks (e.g.: a dependency wouldn't build correctly without cmake):
+```Dockerfile
+FROM rust:1.63
+RUN apt update && apt upgrade -y
+RUN apt install curl nano cmake -y
+RUN echo 'PS1="RUST | $PS1"' >> ~/.bashrc
+WORKDIR /work
+CMD bash
+```
+
+The are two versions of the compose file, one for development, which starts all the container defined and allows to connect manually to them to build & test code; while the deploy version allows a single execution of the application, it receives the filename and the regex from the bash script and proceeds as we already seen.
+
+## Some thoughts on fault tolerance
+This basic implementation does not take care too much of fault tolerance, even though it is surely an important aspect. For this reason we can wrap up here some thoughts. 
+The server does not detect whether a unit connects or no, neither it checks or listen for disconnection. This means that in case one unit is broken the job that would have been assigned to it never gets done.
+The units assume the server to be up and running on startup, in fact as soon as they are active they publish their id on the `new_client` topic and then wait for instructions on their own topic. If at that moment the server hasn't subscribed yet, the unit will hang forever. This is partially solved by the compose, which sets the main server as dependency for the units (which means that they do not start their activation process until the server is up) plus a timeout for the rust app to run.
+
+## Bugs

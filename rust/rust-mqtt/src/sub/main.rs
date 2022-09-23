@@ -50,7 +50,7 @@ fn main() {
     for msg in rx.iter() {
         if let Some(msg) = msg {
             println!("{}", msg);
-            send_back(msg, cli.clone())
+            send_back(msg, &cli)
         } else if !cli.is_connected() {
             if try_reconnect(&cli) {
                 println!("Resubscribe topics...");
@@ -62,7 +62,7 @@ fn main() {
     }
 }
 
-fn send_back(msg: mqtt::Message, cli: Client) {
+fn send_back(msg: mqtt::Message, cli: &Client) {
     let msg = paho_mqtt::Message::new(DFLT_TOPICS[0], msg.payload(), 1);
     let tok = cli.publish(msg);
 
