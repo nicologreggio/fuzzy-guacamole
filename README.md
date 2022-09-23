@@ -25,7 +25,7 @@ The [mosquitto](https://mosquitto.org/) broker has been adopted for this project
 
 ## Scala
 Scala is a strong statically typed general-purpose programming language which supports both object-oriented programming and functional programming.
-Its source code can be compiled to Java bytecode and run on a Java virtual machine (JVM), leading to optimal interoperability. Given the overhead required to run it, it has been chosen to develop the central part.
+Its source code can be compiled to Java bytecode and run on a Java virtual machine (JVM), leading to optimal interoperability. Given the overhead required to run it, it has been chosen to develop the central part. (Nowadays actually it's possible to compile native code with new jvm (Graal), nonetheless it remains a complex process so the choice doesn't change)
 
 The [alpakka library](https://doc.akka.io/docs/alpakka/current/mqtt.html#) has been adopted as mqtt client.
 
@@ -40,6 +40,7 @@ As mqtt client the [eclipse paho](https://github.com/eclipse/paho.mqtt.rust) lib
 ## Use cases
 ### MQTT communication
 ![MQTT communication use case diagram](docs/useCases/MqttCommunication.png)
+
 Here we can see basically what the actors of an MQTT system do. As we anticipated earlier we have the broker which handles the connection with all the clients and is responsible to triage all the messages to the correct subscribers. While a connected client can publish messages to one or more topics and subscribe to as many topic as it needs.
 
 ### Regex search
@@ -63,7 +64,7 @@ There are three different kind of containers:
 
 The Scala service receives the informations about the file and the regex via the environment, set by the launching script. At this point it fetches the line count of the file from the library and computes the length of each chunk to process based on the number of available units (which it knows again from the environment). Initially it subscribes to the topics `new_client` and `results`. The former will be to acknowledge and process the connection of a new unit while the latter to gather the results from the units which will then be printed.
 
-When a Rust unit starts it connects to the broker and publish its own id (set by the environment) in the `new_client` topic, then it subscribes to the topic `unit_id`. At this point it will receive on "its own" topic the information from the server required to start the search. Then it fetches the required chunk from the library and seek for matches of the regex. Upon completion it publishes its results to the `results` topic.
+When a Rust unit starts it subscribes to the topic `unit_id`, where id is its owm identifier (set by the environment), then it connects to the broker and publish its own id in the `new_client` topic. At this point it will receive on "its own" topic the information from the server required to start the search. Then it fetches the required chunk from the library and seek for matches of the regex. Upon completion it publishes its results to the `results` topic.
 
 Finally the user can see the results thanks to the fact that the script, after executing compose in background, it attaches to the Scala container stdout.
 

@@ -90,13 +90,14 @@ fn main() {
 }
 
 fn join_server(cli: &Client, id: &String) -> () {
-    let msg = mqtt::Message::new(NEW_CLIENT_TOPIC, id.as_bytes(), 1);
-    let tok = cli.publish(msg);
     if let Err(e) = cli.subscribe(id, 1){
         println!("Error while subscribing to {} topic message: {:?}", &id, e);
     } else{
         println!("Successfully subscribed to {} topic, waiting jobs to do...", &id);
     }
+    
+    let msg = mqtt::Message::new(NEW_CLIENT_TOPIC, id.as_bytes(), 1);
+    let tok = cli.publish(msg);
 
     if let Err(e) = tok {
         println!("Error sending message: {:?}", e);
