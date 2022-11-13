@@ -18,7 +18,7 @@ services:
       - ./library:/library
     tty: true
     stdin_open: true
-    command: bash -c "cd /work/test-mqtt ; /root/.local/share/coursier/bin/sbt run"
+    command: bash -c ". ~/.profile ; cd /work/test-mqtt ; sbt run"
   rust:
     build:
       context: ./rust
@@ -31,7 +31,7 @@ services:
       - ./library:/library
     tty: true
     stdin_open: true
-    command: bash -c "cd /work/rust-mqtt ; UNIT=1 cargo run --bin rust-mqtt"
+    command: bash -c "sleep 10 ; cd /work/rust-mqtt ; UNIT=1 cargo run --bin rust-mqtt"
   rust-2:
     build:
       context: ./rust
@@ -44,4 +44,4 @@ services:
       - ./library:/library
     tty: true
     stdin_open: true
-    command: bash -c "cd /work/rust-mqtt ; UNIT=2 cargo run --bin rust-mqtt"
+    command: bash -c "sleep 10 ; cd /work/rust-mqtt ; UNIT=2 cargo run --bin rust-mqtt"
