@@ -7,7 +7,7 @@ Advanced Topics in Programming Languages project @ UniPd w/ Kynetics
 ---
 
 # Introduction
-The scope of this project is the implementation of a system capable of searching regular expression in huge text files. The seeking operations are split among several independent units to make the overall search faster and more efficient. For the sake of this implementation everything runs locally on a single machine, but given the architecture the application may easily become distributed, with each unit running on a separate machine increasing this way the computational power hence the efficiency as well.
+The scope of this project is the implementation of a system capable of searching regular expressions in huge text files. The seeking operations are split among several independent units to make the overall search faster and more efficient. For the sake of this implementation everything runs locally on a single machine, but given the architecture the application may easily become distributed, with each unit running on a separate machine increasing this way the computational power hence the efficiency as well.
 
 ---
 
@@ -64,7 +64,7 @@ There are three different kind of containers:
 
 The Scala service receives the informations about the file and the regex via the environment, set by the launching script. At this point it fetches the line count of the file from the library and computes the length of each chunk to process based on the number of available units (which it knows again from the environment). Initially it subscribes to the topics `new_client` and `results`. The former will be to acknowledge and process the connection of a new unit while the latter to gather the results from the units which will then be printed.
 
-When a Rust unit starts it subscribes to the topic `unit_id`, where id is its owm identifier (set by the environment), then it connects to the broker and publish its own id in the `new_client` topic. At this point it will receive on "its own" topic the information from the server required to start the search. Then it fetches the required chunk from the library and seek for matches of the regex. Upon completion it publishes its results to the `results` topic.
+When a Rust unit starts it subscribes to the topic `unit_id`, where id is its own identifier (set by the environment), then it connects to the broker and publish its own id in the `new_client` topic. At this point it will receive on "its own" topic the information from the server required to start the search. Then it fetches the required chunk from the library and seek for matches of the regex. Upon completion it publishes its results to the `results` topic.
 
 Finally the user can see the results thanks to the fact that the script, after executing compose in background, it attaches to the Scala container stdout.
 
@@ -179,7 +179,7 @@ Finally, the app is not able to recognize a malformed regex, it will submit it t
 
 ## Bugs
 Sometimes connections may fail, without recover, leaving the application stuck, especially from the Scala side.
-The latest step of cargo build is extemely slow, this is probably not a bug, but still there may be an internal cause, though this happens during the development of course. The Scala app does not terminate in a "clean way" but rathers throws an InterruptedException quite often, nonetheless the casue has not been identified yet. The launchig script is not super safe, it checks whether the picked file is between the range of available ones but nothing more; also no check is made on the inserted regex. The execution of the scala program in its container is not straightforward from the compose "deploy", for some reason the correct path seem not be set and the required binary (sbt) is not found, requiring a manual operation.
+The latest step of cargo build is extemely slow, this is probably not a bug, but still there may be an internal cause, though this happens during the development of course. The Scala app does not terminate in a "clean way" but rathers throws an InterruptedException quite often, nonetheless the cause has not been identified yet. The launching script is not super safe, it checks whether the picked file is between the range of available ones but nothing more; also no check is made on the inserted regex. The execution of the scala program in its container is not straightforward from the compose "deploy", for some reason the correct path seem not be set and the required binary (sbt) is not found, requiring a manual operation.
 
 # Running the application
 In an environment with a bash or zsh shell, it is sufficient to execute `./fuzzy_guacamole.sh`
