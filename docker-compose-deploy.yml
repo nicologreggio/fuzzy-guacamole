@@ -1,0 +1,47 @@
+version: "3.8"
+services:
+  mqtt:
+    # env_file: .env
+    image: eclipse-mosquitto:1.6
+    ports:
+      - 1883:1883
+      - 9001:9001
+  scala:
+    env_file: .env
+    build:
+      context: ./scala
+    image: scala3
+    depends_on:
+      - mqtt
+    volumes:
+      - ./scala:/work
+      - ./library:/library
+    tty: true
+    stdin_open: true
+    command: bash -c ". ~/.profile ; cd /work/test-mqtt ; sbt run"
+  rust:
+    build:
+      context: ./rust
+    image: custom-rust
+    depends_on:
+      - mqtt
+      - scala
+    volumes:
+      - ./rust:/work
+      - ./library:/library
+    tty: true
+    stdin_open: true
+    command: bash -c "sleep 10 ; cd /work/rust-mqtt ; UNIT=1 cargo run --bin rust-mqtt"
+  rust-2:
+    build:
+      context: ./rust
+    image: custom-rust
+    depends_on:
+      - mqtt
+      - scala
+    volumes:
+      - ./rust:/work
+      - ./library:/library
+    tty: true
+    stdin_open: true
+    command: bash -c "sleep 10 ; cd /work/rust-mqtt ; UNIT=2 cargo run --bin rust-mqtt"

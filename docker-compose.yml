@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  mqtt:
+    # env_file: .env
+    image: eclipse-mosquitto:1.6
+    ports:
+      - 1883:1883
+      - 9001:9001
+  scala:
+    env_file: .env
+    build:
+      context: ./scala
+    image: scala3
+    depends_on:
+      - mqtt
+    volumes:
+      - ./scala:/work
+      - ./library:/library
+    tty: true
+    stdin_open: true
+  rust:
+    env_file: .env
+    build:
+      context: ./rust
+    image: custom-rust
+    depends_on:
+      - mqtt
+    volumes:
+      - ./rust:/work
+      - ./library:/library
+    tty: true
+    stdin_open: true
